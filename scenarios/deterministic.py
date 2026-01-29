@@ -80,7 +80,7 @@ def register_deterministic_scenarios(env: Any) -> None:
             parts.append(f"\nHint: {ux_hint}")
         if web_url:
             parts.append(f"\nURL: {web_url}")
-        prompt = "\n".join(parts)
+        prompt = "\n".join([ques])
 
         _ = yield prompt
 

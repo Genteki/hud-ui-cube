@@ -24,6 +24,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+
 # Global state
 playwright_tool = None
 browser_executor = None
