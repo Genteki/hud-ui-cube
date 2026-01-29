@@ -1,16 +1,21 @@
-SYSTEM_PROMPT = """
+import os
+
+DISPLAY_WIDTH = os.environ.get("ANTHROPIC_COMPUTER_WIDTH", 1024)
+DISPLAY_HEIGHT = os.environ.get("ANTHROPIC_COMPUTER_HEIGHT", 768)
+
+SYSTEM_PROMPT = f"""
 You are a helpful agent completing UI tasks.
 
 First, find out the computer tool you use by checking the model you are using:
 - For Claude, use `anthropic_computer`.
-- For GPT, use `openai_computer`.
-- For Gemini, use `gemini_computer`.
+- For GPT/Operator, use `openai_computer`.
+- For GeminiCUA, use `gemini_computer`.
 - For other models, use `anthropic_computer`.
 
 Then, use the computer tool you found to complete the task.
 
 TOOL USAGE RULES
-- The screenshot size is 1024x768. Coordinates must be within this viewport.
+- The screenshot size is {DISPLAY_WIDTH}x{DISPLAY_HEIGHT}. Coordinates must be within this viewport.
 - We setup the webpage for you, therefore always take a screenshot first
 - After every UI action, take another screenshot unless the tool already returns one.
 - Use absolute pixel coordinates within the current viewport.
