@@ -7,27 +7,18 @@ cd /app/uipath_enterprise_benchmark/DeterministicBenchmark
 npm run preview -- --host 0.0.0.0 --port 3000 </dev/null >&2 &
 NPM_PID=$!
 
-# Start Xvfb when needed for OS-level executors (xdo/pyautogui) or non-headless mode
-EXECUTOR="${COMPUTER_EXECUTOR:-playwright}"
-if [ "$EXECUTOR" != "playwright" ]; then
-    export PLAYWRIGHT_HEADLESS="0"
-fi
-if [ "${PLAYWRIGHT_HEADLESS:-1}" != "1" ] || [ "$EXECUTOR" != "playwright" ]; then
-    echo "[entrypoint] Starting Xvfb (executor=$EXECUTOR, headless=${PLAYWRIGHT_HEADLESS:-1})..." >&2
-    # Use DISPLAY_WIDTH and DISPLAY_HEIGHT env vars (default to 1920x1080)
+# Start display servers (Xvfb + x11vnc + noVNC) unless explicitly disabled
+if [ "${START_DISPLAY_SERVER:-1}" = "1" ]; then
+    echo "[entrypoint] Starting display servers (Xvfb + x11vnc + noVNC)..." >&2
     WIDTH="${DISPLAY_WIDTH:-1920}"
     HEIGHT="${DISPLAY_HEIGHT:-1080}"
-    Xvfb :1 -screen 0 ${WIDTH}x${HEIGHT}x24 -ac &
+    Xvfb :1 -screen 0 ${WIDTH}x${HEIGHT}x24 > /dev/null 2>&1 &
     export DISPLAY=:1
-    # Wait for Xvfb to accept connections
-    for i in {1..10}; do
-        if DISPLAY=:1 xdotool getdisplaygeometry >/dev/null 2>&1; then
-            break
-        fi
-        sleep 0.5
-    done
+    x11vnc -display :1 -nopw -listen 0.0.0.0 -forever > /dev/null 2>&1 &
+    /usr/share/novnc/utils/novnc_proxy --vnc localhost:5900 --listen 6080 > /dev/null 2>&1 &
+    sleep 1
 else
-    echo "[entrypoint] Headless mode - skipping Xvfb" >&2
+    echo "[entrypoint] START_DISPLAY_SERVER=0 - skipping display servers" >&2
 fi
 
 # Wait for npm server to be ready
