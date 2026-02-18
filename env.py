@@ -100,7 +100,7 @@ async def initialize_environment() -> None:
         raise
 
 
-@env.tool("navigate_to")
+# @env.tool("navigate_to")
 async def tool_navigate(url: str) -> ContentResult:
     """Navigate the browser to a URL."""
     if not playwright_tool:
