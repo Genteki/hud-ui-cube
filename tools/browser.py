@@ -331,5 +331,34 @@ class BrowserExecutor(BaseExecutor):
         except Exception as e:
             return ContentResult(error=str(e))
 
+    async def zoom(
+        self,
+        x0: int,
+        y0: int,
+        x1: int,
+        y1: int,
+        target_width: int | None = None,
+        target_height: int | None = None,
+    ) -> ContentResult:
+        try:
+            from io import BytesIO
+
+            from PIL import Image
+
+            screenshot_base64 = await self.screenshot()
+            if not screenshot_base64:
+                return ContentResult(error="Failed to take screenshot for zoom")
+
+            image_data = base64.b64decode(screenshot_base64)
+            image = Image.open(BytesIO(image_data))
+
+            zoomed_base64 = self._crop_and_resize_image(
+                image, x0, y0, x1, y1, target_width, target_height
+            )
+            return ContentResult(base64_image=zoomed_base64)
+        except Exception as e:
+            logger.error("Failed to capture zoom region: %s", e)
+            return ContentResult(error=f"Zoom failed: {e}")
+
 
 __all__ = ["router", "PlaywrightTool", "BrowserExecutor"]
